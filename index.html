@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LEAP progress report</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+    <link rel="stylesheet" href="css/app.css" />
+
+</head>
+<body>
+  <script type="text/template" id="counts-template">
+    <h2>Stuff</h2>
+
+    <% _.each(areas, function(area, name) {%>
+        <% name %> <% area.done %> <% areas.total %>
+    <% }); %>
+  </script>
+
+  <script src="http://underscorejs.org/underscore-min.js"></script>
+  <script src="http://code.jquery.com/jquery.js"></script>
+  <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+
+  <script type="text/javascript">
+  var data = {};
+  </script>
+
+  <script src="data/gv.geojson"></script>
+  <script src="data/ind.geojson"></script>
+  <script src="data/ins.geojson"></script>
+  <script src="data/na.geojson"></script>
+  <script src="data/NAUH.geojson"></script>
+  <script src="data/SH.geojson"></script>
+  <script src="data/SR.geojson"></script>
+  <script src="data/SRTR.geojson"></script>
+  <script src="data/TR.geojson"></script>
+  <script src="data/TRUH.geojson"></script>
+  <script src="data/UH.geojson"></script>
+  <script src="data/VH.geojson"></script>
+
+
+  <script type="text/javascript">
+    var url = 'https://app.localdata.com/api/surveys/788015f0-c0c4-11e3-906d-a3595d61b555/stats';
+    var counts = {};
+    console.log(data);
+    var template = _.template($('#counts-template'));
+
+    var getdata = function(polygon, name) {
+      var query = url + '?intersects=' + encodeURIComponent(JSON.stringify(polygon));
+      $.ajax({
+        url: query
+      }).done(function(data){
+        //console.log(data);
+
+        _.each(data.stats.Collectors, function(v, k){
+          console.log(name, v);
+          if(counts[name]) {
+            counts[name] += v;
+          }else {
+            counts[name] = v;
+          }
+          console.log(counts);
+
+
+        });
+
+      }).fail(function(error) {
+        console.log("ERROR!", name);
+        console.log("ERROR!", query);
+        console.log("ERROR!", polygon);
+        console.log("ERROR!", error);
+      });
+    };
+
+    // Go through each zone
+    _.each(data, function(v, k) {
+      console.log(k, v);
+
+      // Go over each feature
+      _.each(v.features, function(feature) {
+
+        // Go over each multipolygon
+        _.each(feature.geometry.coordinates, function(shape) {
+          if (shape.length !== 1) {
+            shape = [shape];
+          }
+          var polygon = {
+            type: 'Polygon',
+            coordinates: shape
+          };
+          console.log(polygon);
+          getdata(polygon, k);
+        });
+      });
+    });
+
+  </script>
+
+
+</body>
+</html>
