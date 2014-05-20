@@ -49,7 +49,20 @@
 
   <script type="text/javascript">
     var url = 'https://app.localdata.com/api/surveys/788015f0-c0c4-11e3-906d-a3595d61b555/stats';
-    var counts = {};
+    var counts = {
+      'gv': 0,
+      'ind': 0,
+      'ins': 0,
+      'na': 0,
+      'nauh': 0,
+      'sh': 0,
+      'sr': 0,
+      'srtr': 0,
+      'tr': 0,
+      'truh': 0,
+      'uh': 0,
+      'vh': 0
+    };
     console.log(data);
     var template = _.template($('#counts-template').html());
 
