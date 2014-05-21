@@ -5,9 +5,18 @@ body {
 
 th {
     padding-right: 20px;
+    text-align: left;
 }
 
 td {
-    text-transform: uppercase;
     border-bottom: 1px dotted #666;
+    padding-right: 10px;
+    line-height: 1.6em;
+}
+
+#map {
+    height:450px;
+    width: 500px;
+    float: left;
+    margin-right: 20px;
 }

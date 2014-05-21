@@ -7,6 +7,8 @@
 
 </head>
 <body>
+  <div id="map"></div>
+  <div id="data"></div>
   <script type="text/template" id="counts-template">
     <h2>LEAP Survey Progress Tracker</h2>
 
@@ -18,8 +20,9 @@
       </tr>
       <% _.each(areas, function(area, name) {%>
         <tr>
-          <td><%= name %></td>
-          <td><%= area %></td>
+          <td><%= area.name %></td>
+          <td><%= area.count %></td>
+          <td><%= area.target %></td>
         </tr>
       <% }); %>
     </table>
@@ -50,21 +53,70 @@
   <script type="text/javascript">
     var url = 'https://app.localdata.com/api/surveys/788015f0-c0c4-11e3-906d-a3595d61b555/stats';
     var counts = {
-      'gv': 0,
-      'ind': 0,
-      'ins': 0,
-      'na': 0,
-      'nauh': 0,
-      'sh': 0,
-      'sr': 0,
-      'srtr': 0,
-      'tr': 0,
-      'truh': 0,
-      'uh': 0,
-      'vh': 0
+      'gv': {
+        'count': 0,
+        'name': 'Green Venture',
+        'target': 53
+      },
+      'ind': {
+        'count': 0,
+        'name': 'Industrial',
+        'target': 2
+      },
+      'ins': {
+        'count': 0,
+        'name': 'Institutional',
+        'target': 3
+      },
+      'na': {
+        'count': 0,
+        'name': 'Naturescape',
+        'target': 63
+      },
+      'nauh': {
+        'count': 0,
+        'name': 'Naturescape / Urban Homestead',
+        'target': 18
+      },
+      'sh': {
+        'count': 0,
+        'name': 'Shopping hub',
+        'target': 2
+      },
+      'sr': {
+        'count': 0,
+        'name': 'Spacious Residential',
+        'target': 205
+      },
+      'srtr': {
+        'count': 0,
+        'name': 'Spacious or Traditional Residential',
+        'target': 8
+      },
+      'tr': {
+        'count': 0,
+        'name': 'Traditional Residential',
+        'target': 99
+      },
+      'truh': {
+        'count': 0,
+        'name': 'Traditional Residential/Urban Homestead',
+        'target': 1
+      },
+      'uh': {
+        'count': 0,
+        'name': 'Urban Homestead',
+        'target': 71
+      },
+      'vh': {
+        'count': 0,
+        'name': 'Village Hub',
+        'target': 1
+      }
     };
     console.log(data);
     var template = _.template($('#counts-template').html());
+
 
     var getdata = function(polygon, name) {
       var query = url + '?intersects=' + encodeURIComponent(JSON.stringify(polygon));
@@ -74,14 +126,9 @@
         //console.log(data);
 
         _.each(data.stats.Collectors, function(v, k){
+          counts[name].count += v;
           console.log(name, v);
-          if(counts[name]) {
-            counts[name] += v;
-          }else {
-            counts[name] = v;
-          }
-          console.log(counts);
-          $('body').html(template({
+          $('#data').html(template({
             areas: counts
           }));
 
@@ -97,12 +144,27 @@
       });
     };
 
+    // Set up map
+    var map = L.map('map').setView([ 42.37452473019751, -82.98248291015625], 13);
+    var baseLayer = L.tileLayer('http://a.tiles.mapbox.com/v3/matth.map-zmpggdzn/{z}/{x}/{y}.png');
+    map.addLayer(baseLayer);
+
+    // Zone styles
+    var styles = {
+      color: '#58aeff',
+      fillColor: '#daedff',
+      weight: 2
+    };
+
     // Go through each zone
     _.each(data, function(v, k) {
       console.log(k, v);
 
       // Go over each feature
       _.each(v.features, function(feature) {
+        // Try just the polygons:
+        // getdata(feature.geometry, k);
+        L.geoJson(feature, styles).addTo(map).bindPopup(counts[k].name);
 
         // Go over each multipolygon
         _.each(feature.geometry.coordinates, function(shape) {
@@ -114,12 +176,15 @@
             type: 'Polygon',
             coordinates: shape
           };
-          console.log(polygon);
           getdata(polygon, k);
+          console.log(polygon);
         });
       });
     });
 
+    // Ad data layer to the map
+    var dataLayer = L.tileLayer('https://localdata-tiles.herokuapp.com/788015f0-c0c4-11e3-906d-a3595d61b555/tiles/{z}/{x}/{y}.png');
+    map.addLayer(dataLayer);
   </script>
 
 
